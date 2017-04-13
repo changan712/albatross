@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vue demo</title>
+</head>
+<body>
+
+<div id="app">
+    <test v-bind:view="testView"></test>
+
+</div>
+
+</body>
+</html>
+<script src="node_modules/vue/dist/vue.js"></script>
+<script>
+
+    Vue.component('test', {
+        props: ['view'],
+        template: `
+        <ul>
+            <li v-for="item in view">{{item}}</li>
+
+</ul>
+`
+    });
+
+    new Vue({
+        el: '#app',
+        data: {
+            testView: [1, 2, 3]
+        }
+    })
+
+</script>
