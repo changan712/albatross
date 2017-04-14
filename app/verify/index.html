@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>verify</title>
+
+    <style>
+        body{
+            font-family:Helvetica, Arial, sans-serif;
+        }
+
+        ul{
+            padding:0;
+        }
+
+        .user{
+            height:30px;
+            line-height:30px;
+            padding:10px;
+            border-top:1px solid #eee;
+            overflow:hidden;
+            transition:all .25s ease;
+        }
+
+        .user:last-child{
+            border-bottom:1px solid #eee;
+        }
+
+        .v-enter, .v-leave-active{
+            height:0;
+            padding-top:0;
+            padding-bottom:0;
+            border-top-width:0;
+            border-bottom-width:0;
+        }
+
+        .errors{
+            color:#f00;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <ul is="transition-group">
+        <li v-for="(user,index) in users" class="user" :key="index"> <!--:key="user['.key']"-->
+            <span>{{user.name}} - {{user.email}}</span>
+            <button @click="removeUser(user)">X</button>
+        </li>
+    </ul>
+    <form id="form" @submit.prevent="addUser">
+        <input type="text" v-model="newUser.name" placeholder="Username">
+        <input type="email" v-model="newUser.email" placeholder="email@email.com">
+        <input type="submit" value="Add User">
+    </form>
+    <ul class="errors">
+        <li v-show="!validation.name">Name cannot be empty.</li>
+        <li v-show="!validation.email">Please provide a valid email address.</li>
+    </ul>
+</div>
+
+</body>
+</html>
+<script src="../../node_modules/vue/dist/vue.min.js"></script>
+
+<script>
+
+    const emailRE = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    new Vue({
+        el: '#app',
+        data: {
+            users: [],
+            newUser: {
+                name: '',
+                email: '',
+            }
+        },
+
+        computed: {
+            validation: function () {
+                return {
+                    name: !!this.newUser.name.trim(),
+                    email: emailRE.test(this.newUser.email),
+                }
+            },
+            isValid: function () {
+                return Object.keys(this.validation).every((key) => this.validation[key]);
+            }
+        },
+
+        methods: {
+            addUser: function () {
+                if (this.isValid) {
+                    this.users.push({
+                        name: this.newUser.name,
+                        email: this.newUser.email
+                    });
+                    this.newUser.name = '';
+                    this.newUser.email = '';
+                }
+            },
+            removeUser: function (user) {
+                let index = this.users.indexOf(user);
+                this.users.splice(index, 1);
+            }
+
+        }
+
+    })
+
+</script>
