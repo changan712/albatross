@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>tree</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script id="polygraph-template" type="text/x-template">
+    <g>
+        <polygon :points="points"></polygon>
+        <circle cx="100" cy="100" r="80"></circle>
+        <axis-label
+                v-for="(stat, index) in stats"
+                :stat="stat"
+                :index="index"
+                :total="stats.length">
+        </axis-label>
+    </g>
+
+</script>
+<script type="text/x-template" id="axis-label-template">
+    <text :x="point.x" :y="point.y">{{stat.label}}</text>
+</script>
+
+<div id="demo">
+    <svg width="200" height="200">
+        <polygraph :stats="stats"></polygraph>
+
+    </svg>
+    <div v-for="stat in stats">
+        <label>{{stat.label}}</label>
+        <input type="range" v-model="stat.value" min="0" max="100">
+        <span>{{stat.value}}</span>
+        <button @click="remove(stat)" class="remove">remove</button>
+
+    </div>
+
+    <form id="add">
+        <input type="text" name="newlabel" v-model="newLabel">
+        <button @click="add">add a　stat</button>
+
+    </form>
+
+    <pre id="raw">
+        {{stats}}
+    </pre>
+</div>
+
+</body>
+</html>
+<script src="../../node_modules/vue/dist/vue.js"></script>
+<script src="../../node_modules/marked/marked.min.js"></script>
+<script>
+
+    const stats = [
+        {label: 'A', value: 100},
+        {label: 'B', value: 100},
+        {label: 'C', value: 100},
+        {label: 'D', value: 100},
+        {label: 'E', value: 100},
+        {label: 'F', value: 100}
+    ];
+
+    Vue.component('polygraph', {
+        props: [
+            'stats'
+        ],
+        template: '#polygraph-template',
+        computed: {
+            points: function () {
+                let total = this.stats.length;
+                return this.stats.map((stat, i) => {
+                    let point = valueToPoint(stat.value, i, total);
+                    return point.x + ',' + point.y;
+                }).join(' ');
+            }
+        },
+        components: {
+            // a sub component for the labels
+            'axis-label': {
+                props: {
+                    stat: Object,
+                    index: Number,
+                    total: Number
+                },
+                template: '#axis-label-template',
+                computed: {
+                    point: function () {
+                        return valueToPoint(
+                            +this.stat.value + 10,
+                            this.index,
+                            this.total
+                        )
+                    }
+                }
+            }
+        }
+
+    });
+
+    new Vue({
+        el: '#demo',
+        data: {
+            newLabel: '',
+            stats: stats
+        },
+        methods: {
+            add: function (e) {
+                e.preventDefault();
+                if (!this.newLabel) return;
+                this.stats.push({
+                    label: this.newLabel,
+                    value: 100
+                });
+                this.newLabel = '';
+            },
+            remove: function (stat) {
+                if (this.stats.length > 3) {
+                    this.stats.splice(this.stats.indexOf(stat), 1);
+                }
+            }
+        }
+
+    });
+
+    function valueToPoint(value, index, total) {
+        let x = 0;
+        let y = -value * 0.8;
+        let angle = Math.PI * 2 / total * index;
+        let cos = Math.cos(angle);
+        let sin = Math.sin(angle);
+        let tx = x * cos - y * sin + 100;
+        let ty = x * sin + y * cos + 100;
+        return {
+            x: tx,
+            y: ty
+        }
+    }
+
+</script>

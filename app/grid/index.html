@@ -68,7 +68,39 @@
     </style>
 </head>
 <body>
+<script type="text/x-template" id="grid-template">
+    <table>
+        <thead>
+        <tr>
+            <th v-for="key in columns"
+                @click="sortBy(key)"
+                :class="{ active: sortKey == key }">
+                {{ key | capitalize }}
+                <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+          </span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="entry in filteredData">
+            <td v-for="key in columns">
+                {{entry[key]}}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</script>
+
 <div id="app">
+    <form id="search">
+
+        search <input type="text" name="query" v-model="searchQuery">
+    </form>
+    <demo-grid
+            :data="gridData"
+            :columns="gridColumns"
+            :filter-key="searchQuery">
+    </demo-grid>
 
 </div>
 
@@ -78,7 +110,7 @@
 
 <script>
     Vue.component('demo-grid', {
-        template: '',
+        template: '#grid-template',
         props: {
             data: Array,
             columns: Array,
@@ -94,6 +126,18 @@
                 sortOrders: sortOrders
             }
         },
+        filters: {
+            capitalize: function (str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+        },
+
+        methods: {
+            sortBy: function (key) {
+                this.sortKey = key;
+                this.sortOrders[key] = this.sortOrders[key] * -1;
+            }
+        },
         computed: {
             filteredData: function () {
                 let sortKey = this.sortKey;
@@ -102,15 +146,35 @@
                 let data = this.data;
 
                 if (filterKey) {
-                    data = data.filter(row => Object.keys(row).some(key => String(row[key].toLowerCase().indexOf(filterKey) > -1)))
+                    data = data.filter(row => Object.keys(row).some(key => String(row[key]).toLowerCase().indexOf(filterKey) > -1))
+
                 }
 
                 if (sortKey) {
-
+                    data = data.slice().sort((a, b) => {
+                        a = a[sortKey];
+                        b = b[sortKey];
+                        return (a === b ? 0 : a > b ? 1 : -1) * order;
+                    })
                 }
+                return data;
             }
         }
 
+    });
+
+    demo = new Vue({
+        el: '#app',
+        data: {
+            searchQuery: '',
+            gridColumns: ['name', 'power'],
+            gridData: [
+                {name: 'Chuck Norris', power: Infinity},
+                {name: 'Bruce Lee', power: 9000},
+                {name: 'Jackie Chan', power: 7000},
+                {name: 'Jet Li', power: 8000}
+            ]
+        }
     })
 
 </script>
