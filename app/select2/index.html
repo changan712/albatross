@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>todo</title>
+    <link rel="stylesheet" href="https://unpkg.com/select2@4.0.3/dist/css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script id="select2-template" type="text/x-template">
+    <select>
+        <slot></slot>
+    </select>
+</script>
+
+<div id="app">
+
+</div>
+<script type="text/x-template" id="demo-template">
+    <div>
+        <p>Selected: {{ selected }}</p>
+        <select2 :options="options" v-model="selected">
+            <option disabled value="0">Select one</option>
+        </select2>
+    </div>
+</script>
+</body>
+</html>
+<script src="../../node_modules/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/jquery@3.1.1"></script>
+<script src="https://unpkg.com/select2@4.0.3"></script>
+<script>
+    // register modal component
+    Vue.component('select2', {
+        template: '#select2-template',
+        props: ['options', 'value'],
+        mounted: function () {
+            $(this.$el)
+                .val(this.value)
+                .select2({data: this.options})
+                .on('change', () => {
+                    this.$emit('input', this.value)
+                })
+        },
+        watch: {
+            value: function (value) {
+                $(this.$el).val(value);
+            },
+            options: function (options) {
+                $(this.$el).select2({data: options})
+            }
+        },
+        destroyed:function () {
+            $(this.$el).off().select2('destroy');
+        }
+    });
+
+    // start app
+    new Vue({
+        el: '#app',
+        template: '#demo-template',
+        data: {
+            selected: 0,
+            options: [
+                { id: 1, text: 'Hello' },
+                { id: 2, text: 'World' }
+            ]
+        }
+    })
+</script>
